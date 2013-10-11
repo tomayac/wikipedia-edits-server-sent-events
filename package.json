@@ -1,0 +1,19 @@
+{
+  "name": "wikipedia-edits-server-sent-events",
+  "version": "0.0.1",
+  "author": {
+    "name": "Thomas Steiner",
+    "email": "tomac@google.com"
+  },
+  "description": "Emits a Server-Sent Event (SSE) upon each Wikipedia edit",
+  "dependencies": {
+    "cheerio": "0.12.3",
+    "irc": "0.3.x",
+    "request": "2.27.x",
+    "async": "0.2.x"
+  },
+  "engines": {
+    "node": "0.8.x",
+    "npm": "1.1.x"
+  }
+}
