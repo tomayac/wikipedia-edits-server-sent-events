@@ -13,7 +13,7 @@ var IRC_SERVER = 'irc.wikimedia.org';
 var IRC_NICK = 'Wikipedia-Edits-SSE';
 var IRC_REAL_NAME_AND_CONTACT = 'Thomas Steiner (tomac@google.com)';
 
-var DISCARD_WIKIPEDIA_BOTS = true;
+var DISCARD_WIKIPEDIA_BOTS = false;
 
 var addIrcErrorListener = function(callback) {
   client.addListener('error', function(message) {
@@ -44,9 +44,11 @@ var getListOfWikipedias = function(callback) {
       callback('List of Wikipedias could not be loaded: ' + error);
     }
     var $ = cheerio.load(body);
-    callback(null, $('td > a[class="extiw"][title$=":"]').map(function(i, el) {
-      return el.attribs.title.replace(/:$/, '');
-    }));
+    var wikipedias = $('td > a[class="extiw"][title$=":"]').map(function(i, e) {
+      return e.attribs.title.replace(/:$/, '');
+    });
+    wikipedias.push('wikidata');
+    callback(null, wikipedias);
   });
 };
 
@@ -87,13 +89,16 @@ var parseMessage = function(message, to) {
   var flagsAndDiffUrl =
       messageComponents[0].replace('[[' + article + ']] ', '').split(' ');
   var flags = flagsAndDiffUrl[0];
-  if (DISCARD_WIKIPEDIA_BOTS) {
-    if ((/B/.test(flags)) ||
-        (/\bbot/i.test(editor)) ||
-        (/bot\b/i.test(editor))) {
+  var isBot = false;
+  if ((/B/.test(flags)) ||
+      (/\bbot/i.test(editor)) ||
+      (/bot\b/i.test(editor))) {
+    if (DISCARD_WIKIPEDIA_BOTS) {
       return;
     }
+    isBot = true;
   }
+
   // normalize article titles to follow the Wikipedia URLs
   article = article.replace(/\s/g, '_');
   // the language format follows the IRC room format: "#language.project"
@@ -134,6 +139,7 @@ var parseMessage = function(message, to) {
   return {
     article: article,
     editor: editor,
+    isBot: isBot,
     language: language,
     delta: delta,
     comment: comment,
@@ -170,7 +176,15 @@ app.get('/', function(req, res) {
     res.write(': Keep-Alive. Ignore.\n\n');
   }, 500);
 
-  var addIrcMessageListener = function() {
+  var addIrcMessageListener = function(callback) {
+
+    var emitMessage = function(message) {
+      var messageString = JSON.stringify(message);
+      res.write('data: ' + messageString + '\n\n');
+      res.write('event: ' + message.language + 'edit\n');
+      res.write('data: ' + messageString + '\n\n');
+    };
+
     client.addListener('message', function(from, to, message) {
       if (keepAlive) {
         clearInterval(keepAlive);
@@ -186,21 +200,17 @@ app.get('/', function(req, res) {
       }
       emitMessage(parsedMessage);
     });
-  };
-
-  var emitMessage = function(message) {
-    var messageString = JSON.stringify(message);
-    res.write('data: ' + messageString + '\n\n');
-    res.write('event: ' + message.language + 'edit\n');
-    res.write('data: ' + messageString + '\n\n');
+    callback && callback(null);
   };
 
   addIrcMessageListener(null);
+
   res.header({
     Connection: 'Keep-Alive',
     'Content-Type': 'text/event-stream',
     'Access-Control-Allow-Origin': '*'
   });
+
 });
 
 // start the server
