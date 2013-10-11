@@ -2,6 +2,10 @@ var request = require('request');
 var cheerio = require('cheerio');
 var irc = require('irc');
 var async = require('async');
+var express = require('express');
+var http = require('http');
+var app = express();
+var server = http.createServer(app);
 
 var LIST_OF_WIKIPEDIAS_URL = 'https://meta.wikimedia.org/wiki/List_of_Wikipedias';
 
@@ -11,36 +15,14 @@ var IRC_REAL_NAME_AND_CONTACT = 'Thomas Steiner (tomac@google.com)';
 
 var DISCARD_WIKIPEDIA_BOTS = true;
 
-var client = new irc.Client(
-    IRC_SERVER,
-    IRC_NICK,
-    {
-      userName: IRC_NICK,
-      realName: IRC_REAL_NAME_AND_CONTACT,
-      floodProtection: true,
-      showErrors: true,
-      stripColors: true
-    });
-
-async.series({
-  addErrorListener: addErrorListener,
-  addJoinedListener: addJoinedListener,
-  addRegisteredListener: addRegisteredListener,
-  addMessageListener: addMessageListener,
-  getListOfWikipedias: getListOfWikipedias,
-},
-function(err, results) {
-  joinChannels(results.getListOfWikipedias);
-});
-
-function addErrorListener(callback) {
+var addIrcErrorListener = function(callback) {
   client.addListener('error', function(message) {
     console.warn('IRC error: ' + message);
   });
   callback(null);
-}
+};
 
-function addRegisteredListener(callback) {
+var addIrcRegisteredListener = function(callback) {
   client.addListener('registered', function(message) {
     console.log('Connected to IRC server ' + IRC_SERVER);
     // connect to IRC channels
@@ -48,15 +30,15 @@ function addRegisteredListener(callback) {
   callback(null);
 }
 
-function joinChannels(wikipedias) {
+var joinChannels = function(wikipedias) {
   wikipedias.forEach(function(channel, i) {
     channel = '#' + channel + '.wikipedia';
     console.log((++i) + ') Joining channel ' + channel);
     client.join(channel);
   });
-}
+};
 
-function getListOfWikipedias(callback) {
+var getListOfWikipedias = function(callback) {
   request.get(LIST_OF_WIKIPEDIAS_URL, function(error, response, body) {
     if (error || response.statusCode !== 200) {
       callback('List of Wikipedias could not be loaded: ' + error);
@@ -66,36 +48,24 @@ function getListOfWikipedias(callback) {
       return el.attribs.title.replace(/:$/, '');
     }));
   });
-}
+};
 
-function addJoinedListener(callback) {
+var addIrcJoinedListener = function(callback) {
   client.addListener('join', function(channel, nick, message) {
     if (nick === IRC_NICK) {
       console.log(nick + ' joined channel ' + channel);
     }
   });
   callback(null);
-}
+};
 
-function addMessageListener(callback) {
-  client.addListener('message', function(from, to, message) {
-    // this is the Wikipedia IRC bot that announces live changes
-    if (from !== 'rc-pmtpa') {
-      return;
-    }
-    var components = parseMessage(message, to);
-    if (!components) {
-      return;
-    }
-    console.log(JSON.stringify(components));
-  });
-  callback(null);
-}
-
-function parseMessage(message, to) {
+var parseMessage = function(message, to) {
   // get the editor's username or IP address
   // the IRC log format is as follows (with color codes removed):
-  // rc-pmtpa: [[Juniata River]] http://en.wikipedia.org/w/index.php?diff=516269072&oldid=514659029 * Johanna-Hypatia * (+67) Category:Place names of Native American origin in Pennsylvania
+  // rc-pmtpa: [[Juniata River]] \
+  // http://en.wikipedia.org/w/index.php?diff=516269072&oldid=514659029 * \
+  // Johanna-Hypatia * (+67) Category:Place names of Native American origin \
+  // in Pennsylvania
   var messageComponents = message.split(' * ');
   var articleRegExp = /\[\[(.+?)\]\].+?$/;
   var article = messageComponents[0].replace(articleRegExp, '$1');
@@ -170,4 +140,70 @@ function parseMessage(message, to) {
     diffUrl: diffUrl,
     languageClusterUrl: languageClusterUrl
   };
-}
+};
+
+var client = new irc.Client(
+    IRC_SERVER,
+    IRC_NICK,
+    {
+      userName: IRC_NICK,
+      realName: IRC_REAL_NAME_AND_CONTACT,
+      floodProtection: true,
+      showErrors: true,
+      stripColors: true
+    });
+
+addIrcRegisteredListener(function() {
+  async.parallel({
+    addIrcErrorListener: addIrcErrorListener,
+    addIrcJoinedListener: addIrcJoinedListener,
+    getListOfWikipedias: getListOfWikipedias,
+  },
+  function(err, results) {
+    joinChannels(results.getListOfWikipedias);
+  });
+});
+
+app.get('/', function(req, res) {
+
+  var keepAlive = setInterval(function() {
+    res.write(': Keep-Alive. Ignore.\n\n');
+  }, 500);
+
+  var addIrcMessageListener = function(callback) {
+    client.addListener('message', function(from, to, message) {
+      if (keepAlive) {
+        clearInterval(keepAlive);
+        keepAlive = null;
+      }
+      // this is the Wikipedia IRC bot that announces live changes
+      if (from !== 'rc-pmtpa') {
+        return;
+      }
+      var parsedMessage = parseMessage(message, to);
+      if (!parsedMessage) {
+        return;
+      }
+      emitMessage(parsedMessage);
+    });
+    callback && callback(null);
+  };
+
+  var emitMessage = function(message) {
+    var messageString = JSON.stringify(message);
+    res.write('data: ' + messageString + '\n\n');
+    res.write('event: ' + message.language + 'edit\n');
+    res.write('data: ' + messageString + '\n\n');
+  };
+
+  addIrcMessageListener(null);
+  res.header({
+    Connection: 'Keep-Alive',
+    'Content-Type': 'text/event-stream'
+  });
+});
+
+// start the server
+var port = process.env.PORT || 8080;
+console.log('Wikipedia-Edits-Server-Sent-Events listening on port ' + port + '.');
+server.listen(port);
