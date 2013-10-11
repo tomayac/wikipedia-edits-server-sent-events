@@ -26,8 +26,8 @@ var addIrcRegisteredListener = function(callback) {
   client.addListener('registered', function(message) {
     console.log('Connected to IRC server ' + IRC_SERVER);
     // connect to IRC channels
+    callback(null);
   });
-  callback(null);
 }
 
 var joinChannels = function(wikipedias) {
@@ -170,7 +170,7 @@ app.get('/', function(req, res) {
     res.write(': Keep-Alive. Ignore.\n\n');
   }, 500);
 
-  var addIrcMessageListener = function(callback) {
+  var addIrcMessageListener = function() {
     client.addListener('message', function(from, to, message) {
       if (keepAlive) {
         clearInterval(keepAlive);
@@ -186,7 +186,6 @@ app.get('/', function(req, res) {
       }
       emitMessage(parsedMessage);
     });
-    callback && callback(null);
   };
 
   var emitMessage = function(message) {
@@ -199,7 +198,8 @@ app.get('/', function(req, res) {
   addIrcMessageListener(null);
   res.header({
     Connection: 'Keep-Alive',
-    'Content-Type': 'text/event-stream'
+    'Content-Type': 'text/event-stream',
+    'Access-Control-Allow-Origin': '*'
   });
 });
 
