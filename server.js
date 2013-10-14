@@ -2,18 +2,22 @@ var request = require('request');
 var cheerio = require('cheerio');
 var irc = require('irc');
 var async = require('async');
+var cuid = require('cuid');
 var express = require('express');
 var http = require('http');
 var app = express();
 var server = http.createServer(app);
 
-var LIST_OF_WIKIPEDIAS_URL = 'https://meta.wikimedia.org/wiki/List_of_Wikipedias';
+var LIST_OF_WIKIPEDIAS_URL =
+    'https://meta.wikimedia.org/wiki/List_of_Wikipedias';
 
 var IRC_SERVER = 'irc.wikimedia.org';
 var IRC_NICK = 'Wikipedia-Edits-SSE';
 var IRC_REAL_NAME_AND_CONTACT = 'Thomas Steiner (tomac@google.com)';
 
 var DISCARD_WIKIPEDIA_BOTS = false;
+
+var responseObjects = {};
 
 var addIrcErrorListener = function(callback) {
   client.addListener('error', function(message) {
@@ -25,10 +29,33 @@ var addIrcErrorListener = function(callback) {
 var addIrcRegisteredListener = function(callback) {
   client.addListener('registered', function(message) {
     console.log('Connected to IRC server ' + IRC_SERVER);
-    // connect to IRC channels
     callback(null);
   });
 }
+
+var addIrcJoinedListener = function(callback) {
+  client.addListener('join', function(channel, nick, message) {
+    if (nick.substring(0, IRC_NICK.length) === IRC_NICK) {
+      console.log(nick + ' joined channel ' + channel);
+    }
+  });
+  callback(null);
+};
+
+var addIrcMessageListener = function(callback) {
+  client.addListener('message', function(from, to, message) {
+    // this is the Wikipedia IRC bot that announces live changes
+    if (from !== 'rc-pmtpa') {
+      return;
+    }
+    var parsedMessage = parseMessage(message, to);
+    if (!parsedMessage) {
+      return;
+    }
+    emitMessage(parsedMessage);
+  });
+  callback(null);
+};
 
 var joinChannels = function(wikipedias) {
   wikipedias.forEach(function(channel, i) {
@@ -50,15 +77,6 @@ var getListOfWikipedias = function(callback) {
     wikipedias.push('wikidata');
     callback(null, wikipedias);
   });
-};
-
-var addIrcJoinedListener = function(callback) {
-  client.addListener('join', function(channel, nick, message) {
-    if (nick === IRC_NICK) {
-      console.log(nick + ' joined channel ' + channel);
-    }
-  });
-  callback(null);
 };
 
 var parseMessage = function(message, to) {
@@ -148,6 +166,16 @@ var parseMessage = function(message, to) {
   };
 };
 
+var emitMessage = function(message) {
+  var messageString = JSON.stringify(message);
+  for (var requestId in responseObjects) {
+    var res = responseObjects[requestId];
+    res.write('data: ' + messageString + '\n\n');
+    res.write('event: ' + message.language + 'edit\n');
+    res.write('data: ' + messageString + '\n\n');
+  }
+};
+
 var client = new irc.Client(
     IRC_SERVER,
     IRC_NICK,
@@ -163,57 +191,39 @@ addIrcRegisteredListener(function() {
   async.parallel({
     addIrcErrorListener: addIrcErrorListener,
     addIrcJoinedListener: addIrcJoinedListener,
+    addIrcMessageListener: addIrcMessageListener,
     getListOfWikipedias: getListOfWikipedias,
   },
   function(err, results) {
+    if (err) {
+      throw(err);
+    }
     joinChannels(results.getListOfWikipedias);
   });
 });
 
 app.get('/', function(req, res) {
+  var requestId = cuid.slug();
+  responseObjects[requestId] = res;
+  console.log('SSE clients: ' + Object.keys(responseObjects).length);
+  req.on('close', function() {
+    delete responseObjects[requestId];
+    console.log('SSE clients: ' + Object.keys(responseObjects).length);
+  });
 
   var keepAlive = setInterval(function() {
     res.write(': Keep-Alive. Ignore.\n\n');
-  }, 500);
-
-  var addIrcMessageListener = function(callback) {
-
-    var emitMessage = function(message) {
-      var messageString = JSON.stringify(message);
-      res.write('data: ' + messageString + '\n\n');
-      res.write('event: ' + message.language + 'edit\n');
-      res.write('data: ' + messageString + '\n\n');
-    };
-
-    client.addListener('message', function(from, to, message) {
-      if (keepAlive) {
-        clearInterval(keepAlive);
-        keepAlive = null;
-      }
-      // this is the Wikipedia IRC bot that announces live changes
-      if (from !== 'rc-pmtpa') {
-        return;
-      }
-      var parsedMessage = parseMessage(message, to);
-      if (!parsedMessage) {
-        return;
-      }
-      emitMessage(parsedMessage);
-    });
-    callback && callback(null);
-  };
-
-  addIrcMessageListener(null);
+  }, 1000);
 
   res.header({
     Connection: 'Keep-Alive',
     'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
     'Access-Control-Allow-Origin': '*'
   });
-
 });
 
 // start the server
 var port = process.env.PORT || 8080;
-console.log('Wikipedia-Edits-Server-Sent-Events listening on port ' + port + '.');
+console.log('Wikipedia-Edits-Server-Sent-Events listening on port ' + port);
 server.listen(port);

@@ -11,7 +11,8 @@
     "irc": "0.3.x",
     "request": "2.27.x",
     "async": "0.2.x",
-    "express": "3.4.x"
+    "express": "3.4.x",
+    "cuid": "1.2.x"
   },
   "engines": {
     "node": "0.8.x",
