@@ -65,9 +65,9 @@
   };
 
   var updateStatsHtml = function(bots, wikipedians) {
-    return ' <small>(' + bots + ' <i>vs.</i> ' + wikipedians +
+    return '<span class="nobr"><small>(' + bots + ' <i>vs.</i> ' + wikipedians +
         ' absolute—' + Math.round((bots / (bots + wikipedians) * 100)) +
-        '% edited by bots)</small>';
+        '% edited by bots)</small><span>';
   };
 
   setInterval(function() {
