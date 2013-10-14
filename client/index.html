@@ -6,8 +6,27 @@
     <link href="main.css" rel="stylesheet" type="text/css">
   </head>
   <body>
-    <h1>Bots <i>vs.</i> Wikipedians</h1>
+    <h1><img src="bots.png">
+      Bots <i>vs.</i><br>
+      <img src="wikipedians.png">
+      Wikipedians</h1>
     <h2>Who edits more?</h2>
-    <script src="wikipedia-edits-sses.js"></script>
+    <div style="margin-bottom: 2em;">
+      <input type="checkbox" checked id="consider-wikidata">
+      <label for="consider-wikidata">Consider Wikidata</label>
+    </div>
+    <div id="content"></div>
+    <hr>
+    <small>&copy; 2013 by Thomas Steiner
+      (<a href="mailto:tomac@google.com">tomac@google.com</a>).<br>
+      Released under the terms of the
+      <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a>
+      license.<br>
+      Find the
+      <a href="https://github.com/tomayac/wikipedia-edits-server-sent-events">
+        source code</a>
+      on GitHub.
+    </small>
+    <script src="wikipedia-sse.js"></script>
   </body>
 </html>

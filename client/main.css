@@ -4,5 +4,12 @@ body {
 }
 
 img {
-  height: 20px;
+  vertical-align: middle;
+}
+img.icon {
+  width: 1.5em;
+}
+
+img.logo {
+  margin-right: 0.5em;
 }
