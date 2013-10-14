@@ -88,7 +88,7 @@
       globalBots += stats.bots;
       globalWikipedians += stats.wikipedians;
     });
-    if (!considerWikidata.checked) {
+    if (botsVsWikipedians['wikidata'] && !considerWikidata.checked) {
       globalBots -= botsVsWikipedians['wikidata'].bots;
       globalWikipedians -= botsVsWikipedians['wikidata'].wikipedians;
     }
