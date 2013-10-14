@@ -202,7 +202,7 @@ addIrcRegisteredListener(function() {
   });
 });
 
-app.get('/', function(req, res) {
+app.get('/sse', function(req, res) {
   var requestId = cuid.slug();
   responseObjects[requestId] = res;
   console.log('SSE clients: ' + Object.keys(responseObjects).length);
@@ -222,6 +222,8 @@ app.get('/', function(req, res) {
     'Access-Control-Allow-Origin': '*'
   });
 });
+
+app.use(express.static(__dirname + '/client', ''));
 
 // start the server
 var port = process.env.PORT || 8080;

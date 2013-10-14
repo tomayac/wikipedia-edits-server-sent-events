@@ -94,7 +94,7 @@
 
   contentDiv.appendChild(createStatsPane('global', 0, 0));
 
-  var source = new EventSource('http://localhost:8080');
+  var source = new EventSource('/sse');
   source.addEventListener('message', function(e) {
     var data = JSON.parse(e.data);
     if (!document.querySelector('#' + data.language + '-range')) {
