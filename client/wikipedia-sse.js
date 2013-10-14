@@ -19,8 +19,9 @@
 
   var createStatsPane = function(language, bots, wikipedians) {
     var div = document.createElement('div');
+    div.setAttribute('class', 'stats');
     if (language === 'global') {
-      div.style.marginBottom = '2em';
+      div.style.marginBottom = '3em';
     }
     if (language === 'wikidata') {
       div.setAttribute('class', 'wikidata');
@@ -65,7 +66,10 @@
   };
 
   var updateStatsHtml = function(bots, wikipedians) {
-    return '<span class="nobr"><small>(' + bots + ' <i>vs.</i> ' + wikipedians +
+    if (!(bots + wikipedians)) {
+      return '';
+    }
+    return ' <span class="nobr"><small>(' + bots + ' <i>vs.</i> ' + wikipedians +
         ' absolute—' + Math.round((bots / (bots + wikipedians) * 100)) +
         '% edited by bots)</small><span>';
   };

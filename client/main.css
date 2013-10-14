@@ -18,3 +18,7 @@ img.logo {
 span.nobr {
   white-space: nowrap;
 }
+
+div.stats {
+  margin-bottom: 1em;
+}
