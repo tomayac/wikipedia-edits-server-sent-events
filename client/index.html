@@ -2,6 +2,7 @@
 <html>
   <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=false;">
     <title>Bots vs. Wikipedians</title>
     <link href="main.css" rel="stylesheet" type="text/css">
   </head>
@@ -17,7 +18,10 @@
     </div>
     <div style="margin-bottom: 2em;">
       <input type="checkbox" checked id="consider-wikidata">
-      <label for="consider-wikidata">Consider Wikidata</label>
+      <label for="consider-wikidata">
+        Consider Wikidata <small>(It may take some time until Wikidata
+        and all Wikipedias show up)</small>
+      </label>
     </div>
     <div id="content"></div>
     <hr>
@@ -28,8 +32,7 @@
       license.<br>
       Find the
       <a href="https://github.com/tomayac/wikipedia-edits-server-sent-events">
-        source code</a>
-      on GitHub.
+        source code</a> on GitHub.
     </small>
     <script src="wikipedia-sse.js"></script>
   </body>
