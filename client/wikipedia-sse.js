@@ -7,6 +7,9 @@
   var considerWikidata = document.querySelector('#consider-wikidata');
 
   considerWikidata.addEventListener('change', function() {
+    if (!document.querySelector('.wikidata')) {
+      return;
+    }
     if (considerWikidata.checked) {
       document.querySelector('.wikidata').style.display = 'block';
     } else {
