@@ -31,6 +31,7 @@
     botsImg.setAttribute('class', 'icon');
     div.appendChild(botsImg);
     var range = document.createElement('input');
+    range.setAttribute('readonly', 'readonly');
     range.type = 'range';
     div.appendChild(range);
     range.id = language + '-range';
