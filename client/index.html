@@ -2,21 +2,17 @@
 <html prefix="og: http://ogp.me/ns#">
   <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, user-scalable=false;">
+    <meta name="viewport" content="width=device-width, user-scalable=no">
     <meta property="og:title" content="Bots vs. Wikipedians" />
     <meta property="og:type" content="website" />
     <meta property="og:description" content="Bots vs. Wikipedians—Who edits more?" />
     <meta property="og:url" content="http://wikipedia-edits.herokuapp.com/" />
     <meta property="og:image" content="http://blog.tomayac.com/images/bots_vs_wikipedians.png" />
-    <title>Bots vs. Wikipedians</title>
+    <title>Bots vs. Wikipedians—Anons vs. Logged-Ins</title>
     <link href="main.css" rel="stylesheet" type="text/css">
   </head>
   <body>
-    <h1><img src="bots.png">
-      Bots <i>vs.</i><br>
-      <img src="wikipedians.png">
-      Wikipedians</h1>
-    <h2>Who edits more?</h2>
+
     <div style="margin-bottom: 2em;">
       Listening to this <a href="/sse">Server-Sent Events stream</a> based on
       Wikipedia edits.
@@ -28,17 +24,37 @@
         and all Wikipedias show up)</small>
       </label>
     </div>
-    <div id="content"></div>
-    <hr>
-    <small>&copy; 2013 by Thomas Steiner
-      (<a href="mailto:tomac@google.com">tomac@google.com</a>).<br>
-      Released under the terms of the
-      <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a>
-      license.<br>
-      Find the
-      <a href="https://github.com/tomayac/wikipedia-edits-server-sent-events">
-        source code</a> on GitHub.
-    </small>
+
+    <div id="bots-vs-wikipedians">
+      <h1><img src="bots.png">
+        Bots <i>vs.</i><br>
+        <img src="wikipedians.png">
+        Wikipedians</h1>
+      <h2>Who edits more?</h2>
+      <div id="content-bots-vs-wikipedians"></div>
+    </div>
+
+    <div id="anons-vs-logged-ins">
+      <h1><img src="anons.png">
+        Anon Humans <i>vs.</i><br>
+        <img src="logged-ins.png">
+        Logged-In Humans</h1>
+      <h2>Who edits more?</h2>
+      <div id="content-anons-vs-logged-ins"></div>
+    </div>
+
+    <footer>
+      <hr>
+      <small>&copy; 2013 by Thomas Steiner
+        (<a href="mailto:tomac@google.com">tomac@google.com</a>).<br>
+        Released under the terms of the
+        <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a>
+        license.<br>
+        Find the
+        <a href="https://github.com/tomayac/wikipedia-edits-server-sent-events">
+          source code</a> on GitHub.
+      </small>
+    </footer>
     <script src="wikipedia-sse.js"></script>
   </body>
 </html>

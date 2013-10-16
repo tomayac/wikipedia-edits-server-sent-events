@@ -22,3 +22,26 @@ span.nobr {
 div.stats {
   margin-bottom: 1em;
 }
+
+@media (max-width: 320px) {
+  div#bots-vs-wikipedians {
+    width: 100%;
+  }
+}
+@media (min-width: 320px) {
+  div#bots-vs-wikipedians {
+    width: 50%;
+    float: left;
+  }
+}
+div#bots-vs-wikipedians {
+  border: solid white 1px;
+}
+
+div#anons-vs-logged-ins {
+  border: solid white 1px;
+}
+
+footer {
+  clear: both;
+}
