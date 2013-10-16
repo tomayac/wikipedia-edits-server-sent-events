@@ -12,12 +12,12 @@
     <link href="main.css" rel="stylesheet" type="text/css">
   </head>
   <body>
-
-    <div style="margin-bottom: 2em;">
-      Listening to this <a href="/sse">Server-Sent Events stream</a> based on
+    <h1>Wikipedia Realtime Edit Stats</h1>
+    <div style="margin-bottom: 1em;">
+      Listening to a <a href="/sse">Server-Sent Events stream</a> based on
       Wikipedia edits.
     </div>
-    <div style="margin-bottom: 2em;">
+    <div style="margin-bottom: 1em;">
       <input type="checkbox" checked id="consider-wikidata">
       <label for="consider-wikidata">
         Consider Wikidata <small>(It may take some time until Wikidata
@@ -26,20 +26,20 @@
     </div>
 
     <div id="bots-vs-wikipedians">
-      <h1><img src="bots.png">
+      <h2><img src="bots.png">
         Bots <i>vs.</i><br>
         <img src="wikipedians.png">
-        Wikipedians</h1>
-      <h2>Who edits more?</h2>
+        Wikipedians</h2>
+      <h3>Who edits more?</h3>
       <div id="content-bots-vs-wikipedians"></div>
     </div>
 
     <div id="anons-vs-logged-ins">
-      <h1><img src="anons.png">
+      <h2><img src="anons.png">
         Anon Humans <i>vs.</i><br>
         <img src="logged-ins.png">
-        Logged-In Humans</h1>
-      <h2>Who edits more?</h2>
+        Logged-In Humans</h2>
+      <h3>Who edits more?</h3>
       <div id="content-anons-vs-logged-ins"></div>
     </div>
 
