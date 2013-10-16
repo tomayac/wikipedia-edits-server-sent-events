@@ -34,7 +34,7 @@
       div.style.marginBottom = '3em';
     }
     if (language === 'wikidata') {
-      div.setAttribute('class', 'wikidata');
+      div.setAttribute('class', 'stats wikidata');
     }
     var measure1Img = document.createElement('img');
     measure1Img.src = mode === 'bots-vs-wikipedians' ? 'bots.png' : 'anons.png';
