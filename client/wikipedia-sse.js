@@ -112,7 +112,7 @@
   };
 
   var updateBotsHtml = function(languages, edits) {
-    html = ' <small>(' + edits + ' edit' + (edits > 1 ? 's' : '') +
+    html = ' <small>(' + edits + ' edit' + (edits !== 1 ? 's' : '') +
         '—language' + (languages.length > 1 ? 's ' : ' ');
     html += languages.map(function(language) {
       return '<a target="_blank" href="http://' + language +
@@ -131,18 +131,19 @@
     var globalAnons = 0;
     var globalLoggedIns = 0;
 
-    var updateStats = function(language, mode, measure1, measure2) {
-      var range = document.querySelector('#' + language + '-' + mode + '-range');
+    var updateStats = function(lang, mode, measure1, measure2) {
+      var range = document.querySelector('#' + lang + '-' + mode + '-range');
       range.max = measure1 + measure2;
       range.value = range.max - measure1;
-      var label = document.querySelector('#' + language + '-' + mode + '-label');
+      var label = document.querySelector('#' + lang + '-' + mode + '-label');
       label.innerHTML = updateStatsHtml(mode, measure1, measure2);
     };
 
     // Bots vs. Wikipedians
     botsVsWikipediansRanges.forEach(function(language) {
       var stats = botsVsWikipedians[language];
-      updateStats(language, 'bots-vs-wikipedians', stats.bots, stats.wikipedians);
+      updateStats(language, 'bots-vs-wikipedians', stats.bots,
+          stats.wikipedians);
       globalBots += stats.bots;
       globalWikipedians += stats.wikipedians;
     });
@@ -155,7 +156,8 @@
     // Anons vs. Logged-Ins
     anonsVsLoggedInsRanges.forEach(function(language) {
       var stats = anonsVsLoggedIns[language];
-      updateStats(language, 'anons-vs-logged-ins', stats.anons, stats.loggedIns);
+      updateStats(language, 'anons-vs-logged-ins', stats.anons,
+          stats.loggedIns);
       globalAnons += stats.anons;
       globalLoggedIns += stats.loggedIns;
     });
@@ -177,17 +179,22 @@
         span.parentNode.classList.remove('wikidata');
       }
     });
+    var selector = 'div:not([class="wikidata"])';
+    var botCount = ((considerWikidata.checked ?
+      (contentDivBotCounter.childNodes.length) :
+      (contentDivBotCounter.querySelectorAll(selector).length)) - 1);
     globalBotCounterSpan.innerHTML =
-        ((considerWikidata.checked ?
-          (contentDivBotCounter.childNodes.length) :
-          (contentDivBotCounter.querySelectorAll('div:not([class="wikidata"])').length))
-        - 1) + ' bots globally <small>(' +
-        globalBots + ' total edits)</small>';
+        botCount + ' bot' + (botCount !== 1 ? 's' : '') +
+        ' globally <small>(' +
+        globalBots + ' total edit' +
+        (globalBots !== 1 ? 's' : '') + ')</small>';
   }, 500);
 
-  contentDivBotsVsWikipedians.appendChild(createStatsPane('global', 'bots-vs-wikipedians', 0, 0));
+  contentDivBotsVsWikipedians.appendChild(createStatsPane('global',
+      'bots-vs-wikipedians', 0, 0));
 
-  contentDivAnonsVsLoggedIns.appendChild(createStatsPane('global', 'anons-vs-logged-ins', 0, 0));
+  contentDivAnonsVsLoggedIns.appendChild(createStatsPane('global',
+      'anons-vs-logged-ins', 0, 0));
 
   var globalBotCounter = document.createElement('div');
   var measureImg = document.createElement('img');
@@ -236,7 +243,10 @@
         }
         var stats = anonsVsLoggedIns[data.language];
         contentDivAnonsVsLoggedIns.appendChild(createStatsPane(
-            data.language, 'anons-vs-logged-ins', stats.anons, stats.loggedIns));
+              data.language,
+              'anons-vs-logged-ins',
+              stats.anons,
+              stats.loggedIns));
       }
       if (isAnon) {
         anonsVsLoggedIns[data.language].anons += 1;
