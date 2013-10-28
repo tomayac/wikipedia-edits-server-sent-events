@@ -2,28 +2,31 @@
 
   var botsVsWikipediansRanges = [];
   var anonsVsLoggedInsRanges = [];
+  var botCounterDivs = [];
   var botsVsWikipedians = {};
   var anonsVsLoggedIns = {};
+  var botCounter = {};
 
   var contentDivBotsVsWikipedians =
       document.querySelector('#content-bots-vs-wikipedians');
   var contentDivAnonsVsLoggedIns =
       document.querySelector('#content-anons-vs-logged-ins');
+  var contentDivBotCounter = document.querySelector('#content-bot-counter');
   var considerWikidata = document.querySelector('#consider-wikidata');
+  if (considerWikidata.checked) {
+    document.querySelector('#wikidata-hidden-style').disabled = true;
+  } else {
+    document.querySelector('#wikidata-hidden-style').disabled = false;
+  }
 
   considerWikidata.addEventListener('change', function() {
     if (!document.querySelector('.wikidata')) {
       return;
     }
-    var wikidatas = document.querySelectorAll('.wikidata');
     if (considerWikidata.checked) {
-      for (var i = 0, len = wikidatas.length; i < len; i++) {
-        wikidatas[i].style.display = 'block';
-      }
+      document.querySelector('#wikidata-hidden-style').disabled = true;
     } else {
-      for (var i = 0, len = wikidatas.length; i < len; i++) {
-        wikidatas[i].style.display = 'none';
-      }
+      document.querySelector('#wikidata-hidden-style').disabled = false;
     }
   });
 
@@ -31,7 +34,7 @@
     var div = document.createElement('div');
     div.setAttribute('class', 'stats');
     if (language === 'global') {
-      div.style.marginBottom = '3em';
+      div.style.marginBottom = '2em';
     }
     if (language === 'wikidata') {
       div.setAttribute('class', 'stats wikidata');
@@ -77,6 +80,26 @@
     return fragment;
   };
 
+  var createBotsCounterPane = function(editor, languages, edits) {
+    var div = document.createElement('div');
+    var measureImg = document.createElement('img');
+    measureImg.src = 'bots.png';
+    measureImg.setAttribute('class', 'icon');
+    div.appendChild(measureImg);
+    var a = document.createElement('a');
+    a.href = 'https://en.wikipedia.org/wiki/User:' + editor;
+    a.setAttribute('target', '_blank');
+    a.textContent = editor;
+    div.appendChild(a);
+    var stats = document.createElement('span');
+    stats.id = editor.replace(/\W/g, '') + '-span';
+    stats.innerHTML = updateBotsHtml(languages, edits);
+    div.appendChild(stats);
+    var fragment = document.createDocumentFragment();
+    fragment.appendChild(div);
+    return fragment;
+  };
+
   var updateStatsHtml = function(mode, measure1, measure2) {
     if (!(measure1 + measure2)) {
       return '';
@@ -86,6 +109,20 @@
         Math.round((measure1 / (measure1 + measure2) * 100)) +
         (mode === 'bots-vs-wikipedians' ?
             '% edited by bots)' : '% edited by anons)') + '</small><span>';
+  };
+
+  var updateBotsHtml = function(languages, edits) {
+    html = ' <small>(' + edits + ' edit' + (edits > 1 ? 's' : '') +
+        '—language' + (languages.length > 1 ? 's ' : ' ');
+    html += languages.map(function(language) {
+      return '<a target="_blank" href="http://' + language +
+          (language === 'wikidata' ? '' : '.wikipedia') +
+          '.org/"' +
+          (language === 'wikidata' ? ' class="wikidata"' : '') + '>' +
+          language + '</a>';
+    }).join(', ');
+    html += ')</small>';
+    return html;
   };
 
   setInterval(function() {
@@ -127,13 +164,43 @@
       globalLoggedIns -= anonsVsLoggedIns['wikidata'].loggedIns;
     }
     updateStats('global', 'anons-vs-logged-ins', globalAnons, globalLoggedIns);
+
+    // Bot Counter
+    botCounterDivs.forEach(function(editor) {
+      var span = document.querySelector('#' + editor + '-span');
+      var stats = botCounter[editor];
+      span.innerHTML = updateBotsHtml(stats.languages, stats.edits);
+      if ((stats.languages.indexOf('wikidata') !== -1) &&
+          (stats.languages.length === 1)) {
+        span.parentNode.classList.add('wikidata');
+      } else {
+        span.parentNode.classList.remove('wikidata');
+      }
+    });
+    globalBotCounterSpan.innerHTML =
+        ((considerWikidata.checked ?
+          (contentDivBotCounter.childNodes.length) :
+          (contentDivBotCounter.querySelectorAll('div:not([class="wikidata"])').length))
+        - 1) + ' bots globally <small>(' +
+        globalBots + ' total edits)</small>';
   }, 500);
 
   contentDivBotsVsWikipedians.appendChild(createStatsPane('global', 'bots-vs-wikipedians', 0, 0));
 
   contentDivAnonsVsLoggedIns.appendChild(createStatsPane('global', 'anons-vs-logged-ins', 0, 0));
 
+  var globalBotCounter = document.createElement('div');
+  var measureImg = document.createElement('img');
+  measureImg.src = 'bots.png';
+  measureImg.setAttribute('class', 'icon');
+  globalBotCounter.appendChild(measureImg);
+  globalBotCounter.style.marginBottom = '2em';
+  contentDivBotCounter.appendChild(globalBotCounter);
+  globalBotCounterSpan = document.createElement('span');
+  globalBotCounter.appendChild(globalBotCounterSpan)
+
   var source = new EventSource('/sse');
+
   source.addEventListener('message', function(e) {
     var data = JSON.parse(e.data);
 
@@ -175,6 +242,26 @@
         anonsVsLoggedIns[data.language].anons += 1;
       } else {
         anonsVsLoggedIns[data.language].loggedIns += 1;
+      }
+    }
+
+    // Bot Counter
+    if (data.isBot) {
+      var editor = data.editor.split(':')[1];
+      var escapedEditor = editor.replace(/\W/g, '');
+      if (!botCounter[escapedEditor]) {
+        botCounterDivs.push(escapedEditor);
+        contentDivBotCounter.appendChild(
+            createBotsCounterPane(editor, [data.language], 1));
+        botCounter[escapedEditor] = {
+          edits: 1,
+          languages: [data.language]
+        };
+      } else {
+        if (botCounter[escapedEditor].languages.indexOf(data.language) === -1) {
+          botCounter[escapedEditor].languages.push(data.language);
+        }
+        botCounter[escapedEditor].edits++;
       }
     }
   }, false);

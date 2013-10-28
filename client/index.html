@@ -8,8 +8,13 @@
     <meta property="og:description" content="Bots vs. Wikipedians—Who edits more?" />
     <meta property="og:url" content="http://wikipedia-edits.herokuapp.com/" />
     <meta property="og:image" content="http://blog.tomayac.com/images/bots_vs_wikipedians.png" />
-    <title>Bots vs. Wikipedians—Anons vs. Logged-Ins</title>
+    <title>Bots vs. Wikipedians—Anons vs. Logged-Ins—Wikipedia Bot Counter</title>
     <link href="main.css" rel="stylesheet" type="text/css">
+    <style id="wikidata-hidden-style" type="text/css">
+      .wikidata {
+        display: none;
+      }
+    </style>
   </head>
   <body>
     <h1>Wikipedia Realtime Edit Stats</h1>
@@ -41,6 +46,13 @@
         Logged-In Humans</h2>
       <h3>Who edits more?</h3>
       <div id="content-anons-vs-logged-ins"></div>
+    </div>
+
+    <div id="bot-counter">
+      <h2><img src="bots.png">
+        Bot Counter
+      <h3>Who are they and what do they edit?</h3>
+      <div id="content-bot-counter"></div>
     </div>
 
     <footer>

@@ -38,11 +38,17 @@ and (min-width: 568px) {
     float: left;
   }
 }
+
 div#bots-vs-wikipedians {
   border: solid white 1px;
 }
 
 div#anons-vs-logged-ins {
+  border: solid white 1px;
+}
+
+div#bot-counter {
+  clear: both;
   border: solid white 1px;
 }
 
