@@ -113,7 +113,7 @@
 
   var updateBotsHtml = function(languages, edits) {
     html = ' <small>(' + edits + ' edit' + (edits !== 1 ? 's' : '') +
-        '—language' + (languages.length > 1 ? 's ' : ' ');
+        '—language' + (languages.length !== 1 ? 's ' : ' ');
     html += languages.map(function(language) {
       return '<a target="_blank" href="http://' + language +
           (language === 'wikidata' ? '' : '.wikipedia') +
