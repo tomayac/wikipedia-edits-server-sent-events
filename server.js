@@ -12,7 +12,7 @@ var LIST_OF_WIKIPEDIAS_URL =
     'https://meta.wikimedia.org/wiki/List_of_Wikipedias';
 
 var IRC_SERVER = 'irc.wikimedia.org';
-var IRC_NICK = 'Wikipedia-Edits-SSE';
+var IRC_NICK = 'Wikipedia-Edits-SSE-' + Date.now();
 var IRC_REAL_NAME_AND_CONTACT = 'Thomas Steiner (tomac@google.com)';
 
 var DISCARD_WIKIPEDIA_BOTS = false;
