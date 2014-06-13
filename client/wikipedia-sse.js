@@ -1,5 +1,8 @@
 (function() {
 
+  var IP_V6 = /(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]).){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]).){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))/g;
+  var IP_V4 = /((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])/;
+
   var botsVsWikipediansRanges = [];
   var anonsVsLoggedInsRanges = [];
   var botCounterDivs = [];
@@ -234,7 +237,9 @@
     if (!data.isBot) {
       var anonsVsLoggedInsId =
           '#' + data.language + '-anons-vs-logged-ins-range';
-      var isAnon = /(?:\d{1,3}\.){3}\d{1,3}/.test(data.editor);
+      IP_V4.lastIndex = 0;
+      IP_V6.lastIndex = 0;
+      var isAnon = IP_V4.test(data.editor) || IP_V6.test(data.editor);
       if (!document.querySelector(anonsVsLoggedInsId)) {
         anonsVsLoggedInsRanges.push(data.language);
         anonsVsLoggedIns[data.language] = {
