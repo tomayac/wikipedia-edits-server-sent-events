@@ -12,10 +12,10 @@
     "cuid": "1.2.x",
     "express": "3.4.x",
     "irc": "0.3.7",
-    "request": "2.27.x"
+    "request": "2.67.x"
   },
   "engines": {
-    "node": "0.8.x",
-    "npm": "1.1.x"
+    "node": "0.12.x",
+    "npm": "2.11.x"
   }
 }
