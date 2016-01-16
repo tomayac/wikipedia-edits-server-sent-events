@@ -7,12 +7,12 @@
   },
   "description": "Emits a Server-Sent Event (SSE) upon each Wikipedia edit",
   "dependencies": {
-    "cheerio": "0.12.3",
-    "irc": "0.3.x",
-    "request": "2.27.x",
     "async": "0.2.x",
+    "cheerio": "0.12.3",
+    "cuid": "1.2.x",
     "express": "3.4.x",
-    "cuid": "1.2.x"
+    "irc": "^0.4.0",
+    "request": "2.27.x"
   },
   "engines": {
     "node": "0.8.x",
