@@ -11,7 +11,7 @@
     "cheerio": "0.12.3",
     "cuid": "1.2.x",
     "express": "3.4.x",
-    "irc": "^0.4.0",
+    "irc": "0.3.7",
     "request": "2.27.x"
   },
   "engines": {
