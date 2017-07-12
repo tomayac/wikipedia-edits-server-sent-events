@@ -71,8 +71,9 @@ var getListOfWikipedias = function(callback) {
       callback('List of Wikipedias could not be loaded: ' + error);
     }
     var $ = cheerio.load(body);
-    var wikipedias = $('td > a[class="extiw"][title$=":"]').map(function(i, e) {
-      return e.attribs.title.replace(/:$/, '');
+    var wikipedias = [];
+    $('td > a[class="extiw"][title$=":"]').map(function(i, e) {
+      wikipedias[i] = $(e).attr('title').replace(/:$/, '');
     });
     wikipedias.push('wikidata');
     callback(null, wikipedias);
